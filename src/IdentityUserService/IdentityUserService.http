@@ -1,0 +1,15 @@
+﻿@IdentityUserService_HostAddress = https://localhost:7073
+@IdentityUserService_HttpHostAddress = http://localhost:5196
+
+GET {{IdentityUserService_HostAddress}}/healthz/
+Accept: application/json
+
+###
+POST {{IdentityUserService_HostAddress}}/register
+Content-Type: application/json
+
+{
+  //RegisterInputModel
+}
+
+###

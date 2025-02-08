@@ -6,5 +6,5 @@ public class UserSettings
 {
     public BigInteger Id { get; set; }
     public string Culture { get; set; } = "ru-RU";
-    public bool IsNotificationEnabled { get; set; }
+    public bool IsNotificationEnabled { get; set; } = true;
 }

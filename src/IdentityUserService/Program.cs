@@ -1,5 +1,7 @@
 using IdentityUserService;
 using IdentityUserService.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -19,8 +21,6 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        builder.Services.AddAuthorization();
-
         var expirationTime = builder.Configuration.GetValue<double>("Auth:ExpirationTimeInDays");
         var connectionStr = builder.Configuration.GetConnectionString("PostgreSQL");
         builder.Services.AddDbContext<AppDbContext>(options =>
@@ -28,9 +28,28 @@ public class Program
             options.UseNpgsql(connectionStr);
         });
 
+        builder.Services.AddAuthorization();
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = AuthOptions.ISSUER,
+                ValidateLifetime = true,
+                ValidateAudience = false,
+                IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+                ValidateIssuerSigningKey = true
+            };
+        });
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
+        builder.Services.AddHealthChecks();
 
         var app = builder.Build();
 
@@ -39,24 +58,18 @@ public class Program
         {
             app.MapOpenApi();
         }
-
         app.UseHttpsRedirection();
-
         app.UseAuthorization();
 
-
-        app.MapGet("/hello", (HttpContext httpContext) =>
-        {
-            return "Hello";
-        })
-        .WithName("hello");
+        app.MapHealthChecks("/healthz");
 
         app.MapGet("/users", async (HttpContext httpContext, AppDbContext dbContext) =>
         {
             return await dbContext.Users.ToListAsync();
         })
         .WithDescription("Return a list of users")
-        .WithName("Users");
+        .WithName("Users")
+        .RequireAuthorization();
 
         app.MapPost("/login", async (LoginInputModel input, HttpContext httpContext, AppDbContext dbContext) =>
         {
@@ -122,9 +135,12 @@ public class Program
             var newUser = new User
             {
                 Id = Guid.NewGuid(),
+                UserName = input.UserName,
                 Email = input.Email,
                 PasswordHash = hashedPassword,
-                Salt = Convert.ToBase64String(salt)
+                Salt = Convert.ToBase64String(salt),
+
+                Settings = new()
             };
 
             dbContext.Users.Add(newUser);
