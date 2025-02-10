@@ -25,7 +25,8 @@ public class Program
         var connectionStr = builder.Configuration.GetConnectionString("PostgreSQL");
         builder.Services.AddDbContext<AppDbContext>(options =>
         {
-            options.UseNpgsql(connectionStr);
+            options.UseNpgsql(connectionStr,
+                x => x.MigrationsHistoryTable("__MigrationsHistory", typeof(Program).Assembly.GetName().Name));
         });
 
         builder.Services.AddAuthorization();

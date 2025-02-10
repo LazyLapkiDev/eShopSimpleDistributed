@@ -8,7 +8,6 @@ public class UserEntityConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.ToTable("users", DatabaseConstants.Schema);
         builder.HasOne(u => u.Settings);
 
         builder.HasIndex(u => u.Email)
