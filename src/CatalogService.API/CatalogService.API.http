@@ -1,0 +1,57 @@
+@CatalogService.API_HostAddress = https://localhost:7128
+
+GET {{CatalogService.API_HostAddress}}/heathz/
+Accept: application/json
+
+###
+
+GET {{CatalogService.API_HostAddress}}/hello
+Accept: application/json
+###
+
+
+GET {{CatalogService.API_HostAddress}}/api/catalog/hello
+
+###
+
+GET {{CatalogService.API_HostAddress}}/api/catalog/helloWithAuth
+
+###
+
+POST {{CatalogService.API_HostAddress}}/api/catalog/categories
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiY2U2OTQ0MTItNzExMS00NzY1LThjZWItMTIwNmZkNDMxZWM4IiwiZXhwIjoxNzM5NjQzNTgzLCJpc3MiOiJJZGVudGl0eVVzZXJTZXJ2aWNlIn0.Zh9hUCmZ-gTLOsmfE665p5cuVmqad8cSCYp3D91SqM0
+
+{
+    "name": "test3",
+    "descriptions": "test descriptions"
+}
+###
+
+POST {{CatalogService.API_HostAddress}}/api/catalog/brands
+Content-Type: application/json
+
+{
+    "name": "test_brand1",
+    "descriptions": "test descriptions"
+}
+
+###
+
+GET {{CatalogService.API_HostAddress}}/api/catalog/brands/01950fe2-c73c-78b5-91bf-d4feff725209
+
+###
+
+PUT {{CatalogService.API_HostAddress}}/api/catalog/brands/01950fe2-c73c-78b5-91bf-d4feff725209
+Content-Type: application/json
+
+{
+  "name": "test_brand1_updated2",
+  "descriptions": "test descriptions"
+}
+
+###
+
+DELETE {{CatalogService.API_HostAddress}}/api/catalog/brands/01950fe3-87c7-7bf6-9c6b-3453d9dd5d8b
+
+###
