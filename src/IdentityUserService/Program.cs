@@ -102,7 +102,7 @@ public class Program
             var jwt = new JwtSecurityToken(
                 issuer: AuthOptions.ISSUER,
                 claims: claims,
-                expires: DateTime.UtcNow.Add(TimeSpan.FromMinutes(expirationTime)),
+                expires: DateTime.UtcNow.Add(TimeSpan.FromDays(expirationTime)),
                 signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysupersecret_secretsecretsecretkey!123")), SecurityAlgorithms.HmacSha256));
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(jwt);
