@@ -3,6 +3,7 @@ using CatalogService.API.Api;
 using CatalogService.API.Data;
 using CatalogService.API.Services;
 using CatalogService.API.Services.Interfaces;
+using CommonConfigurationExtensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -18,24 +19,7 @@ namespace CatalogService.API
 
             // Add services to the container.
             builder.Services.AddAuthorization();
-            builder.Services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = AuthOptions.ISSUER,
-                    ValidateLifetime = true,
-                    ValidateAudience = false,
-                    IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
-                    ValidateIssuerSigningKey = true,
-                    ValidAlgorithms = [SecurityAlgorithms.HmacSha256]
-                };
-            });
+            builder.Services.AddCommonAuthentication(builder.Configuration);
 
             var connectionStr = builder.Configuration.GetConnectionString("PostgreSQL");
             builder.Services.AddDbContext<CatalogDbContext>(options =>

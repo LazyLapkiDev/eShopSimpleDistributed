@@ -43,14 +43,8 @@ public class Program
                 x => x.MigrationsHistoryTable("__MigrationsHistory", typeof(Program).Assembly.GetName().Name));
         });
 
-        var issuer = builder.Configuration.GetValue<string>("Auth:Issuer");
-        var expirationTime = builder.Configuration.GetValue<double>("Auth:ExpirationTimeInDays");
-        var keyFilePath = builder.Configuration.GetValue<string>("Auth:PublicKeyFilePath");
-
         builder.Services.AddAuthorization();
-        using var rsa = RSA.Create();
-        rsa.ImportRSAPublicKey(File.ReadAllBytes(keyFilePath!), out _);
-        builder.Services.AddCommonAuthentication(rsa, issuer!, [SecurityAlgorithms.RsaSha256]);
+        builder.Services.AddCommonAuthentication(builder.Configuration);
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
@@ -115,7 +109,7 @@ public class Program
             var jwt = new JwtSecurityToken(
                 issuer: authOptions.Value.Issuer,
                 claims: claims,
-                expires: DateTime.UtcNow.Add(TimeSpan.FromDays(expirationTime)),
+                expires: DateTime.UtcNow.Add(TimeSpan.FromDays(authOptions.Value.ExpirationTimeInDays)),
                 signingCredentials: signingCredentials);
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(jwt);

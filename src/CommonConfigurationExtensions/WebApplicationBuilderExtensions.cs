@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Cryptography;
@@ -8,24 +9,32 @@ namespace CommonConfigurationExtensions;
 public static class WebApplicationBuilderExtensions
 {
     public static IServiceCollection AddCommonAuthentication(this IServiceCollection services,
-        RSA rsa,
-        string issuer,
-        string[] securityAlgorithms)
+        IConfiguration configuration,
+        string[]? securityAlgorithms = null)
     {
-        if (rsa is null)
+        if (configuration is null)
         {
-            throw new ArgumentNullException(nameof(rsa));
+            throw new ArgumentNullException(nameof(configuration));
         }
+        var issuer = configuration.GetValue<string>("Auth:Issuer");
+        var keyFilePath = configuration.GetValue<string>("Auth:PublicKeyFilePath");
 
         if (string.IsNullOrEmpty(issuer))
         {
             throw new ArgumentNullException(nameof(issuer));
         }
 
-        if (securityAlgorithms.Length == 0)
+        if (string.IsNullOrEmpty(keyFilePath))
         {
-            throw new ArgumentException("The array cannot be empty.", nameof(securityAlgorithms));
+            throw new ArgumentNullException(nameof(keyFilePath));
         }
+
+
+        securityAlgorithms ??= [SecurityAlgorithms.RsaSha256];
+
+        var rsa = RSA.Create();
+        rsa.ImportRSAPublicKey(File.ReadAllBytes(keyFilePath!), out _);
+        services.AddSingleton(rsa);
 
         services.AddAuthentication(options =>
         {
