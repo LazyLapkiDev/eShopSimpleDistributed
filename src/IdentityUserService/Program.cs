@@ -29,6 +29,11 @@ public class Program
                 x => x.MigrationsHistoryTable("__MigrationsHistory", typeof(Program).Assembly.GetName().Name));
         });
 
+        var keyFilePath = @"D:\DEV_PROJECTS\.NET\C#\2_LearningApps\eShopSimpleDistributed\keys\public_rsa_key.pem";
+        var bytes = File.ReadAllBytes(keyFilePath);
+        using var rsa = RSA.Create();
+        rsa.ImportRSAPublicKey(bytes, out _);
+
         builder.Services.AddAuthorization();
         builder.Services.AddAuthentication(options =>
         {
@@ -43,7 +48,8 @@ public class Program
                 ValidIssuer = AuthOptions.ISSUER,
                 ValidateLifetime = true,
                 ValidateAudience = false,
-                IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+                //IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+                IssuerSigningKey = new RsaSecurityKey(rsa),
                 ValidateIssuerSigningKey = true
             };
         });
@@ -99,11 +105,20 @@ public class Program
                 new (ClaimTypes.Name, user.Id.ToString())
             };
 
+            var bytes = File.ReadAllBytes(@"D:\DEV_PROJECTS\.NET\C#\2_LearningApps\eShopSimpleDistributed\keys\private_rsa_key.pem");
+            using var rsa = RSA.Create();
+            rsa.ImportRSAPrivateKey(bytes, out _);
+
+            var signingCredentials = new SigningCredentials(
+                new RsaSecurityKey(rsa),
+                SecurityAlgorithms.RsaSha256);
+
             var jwt = new JwtSecurityToken(
                 issuer: AuthOptions.ISSUER,
                 claims: claims,
                 expires: DateTime.UtcNow.Add(TimeSpan.FromDays(expirationTime)),
-                signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysupersecret_secretsecretsecretkey!123")), SecurityAlgorithms.HmacSha256));
+                //signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysupersecret_secretsecretsecretkey!123")), SecurityAlgorithms.HmacSha256));
+                signingCredentials: signingCredentials);
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(jwt);
 
