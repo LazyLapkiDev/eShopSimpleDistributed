@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using System.Collections.Immutable;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -21,7 +24,17 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        var expirationTime = builder.Configuration.GetValue<double>("Auth:ExpirationTimeInDays");
+        builder.Services.AddOptions<AuthOptions>()
+            .Bind(builder.Configuration.GetSection("Auth"))
+            .Validate(value =>
+            {
+                if(int.IsPositive(value.ExpirationTimeInDays))
+                {
+                    return value.ExpirationTimeInDays < 30;
+                }
+                return false;
+            }, "ExpirationTimeInDays must be positive integer less then 30");
+
         var connectionStr = builder.Configuration.GetConnectionString("PostgreSQL");
         builder.Services.AddDbContext<AppDbContext>(options =>
         {
@@ -29,7 +42,9 @@ public class Program
                 x => x.MigrationsHistoryTable("__MigrationsHistory", typeof(Program).Assembly.GetName().Name));
         });
 
-        var keyFilePath = @"D:\DEV_PROJECTS\.NET\C#\2_LearningApps\eShopSimpleDistributed\keys\public_rsa_key.pem";
+        var issuer = builder.Configuration.GetValue<string>("Auth:Issuer");
+        var expirationTime = builder.Configuration.GetValue<double>("Auth:ExpirationTimeInDays");
+        var keyFilePath = builder.Configuration.GetRequiredSection("Auth:PublicKeyFilePath").Value!;
         var bytes = File.ReadAllBytes(keyFilePath);
         using var rsa = RSA.Create();
         rsa.ImportRSAPublicKey(bytes, out _);
@@ -45,7 +60,7 @@ public class Program
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = AuthOptions.ISSUER,
+                ValidIssuer = issuer,
                 ValidateLifetime = true,
                 ValidateAudience = false,
                 //IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
@@ -78,7 +93,7 @@ public class Program
         .WithName("Users")
         .RequireAuthorization();
 
-        app.MapPost("/login", async (LoginInputModel input, HttpContext httpContext, AppDbContext dbContext) =>
+        app.MapPost("/login", async (LoginInputModel input, HttpContext httpContext, AppDbContext dbContext, IOptions<AuthOptions> authOptions) =>
         {
             var user = await dbContext.Users.SingleOrDefaultAsync(u => u.Email == input.Email);
             if(user is null)
@@ -114,7 +129,7 @@ public class Program
                 SecurityAlgorithms.RsaSha256);
 
             var jwt = new JwtSecurityToken(
-                issuer: AuthOptions.ISSUER,
+                issuer: authOptions.Value.Issuer,
                 claims: claims,
                 expires: DateTime.UtcNow.Add(TimeSpan.FromDays(expirationTime)),
                 //signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysupersecret_secretsecretsecretkey!123")), SecurityAlgorithms.HmacSha256));
