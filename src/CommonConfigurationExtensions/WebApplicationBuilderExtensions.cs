@@ -7,11 +7,26 @@ namespace CommonConfigurationExtensions;
 
 public static class WebApplicationBuilderExtensions
 {
-    public static IServiceCollection AddCommonAuthentication(this IServiceCollection services, string publicKeyFilePath)
+    public static IServiceCollection AddCommonAuthentication(this IServiceCollection services,
+        RSA rsa,
+        string issuer,
+        string[] securityAlgorithms)
     {
-        var bytes = File.ReadAllBytes(publicKeyFilePath);
-        using var rsa = RSA.Create();
-        rsa.ImportRSAPublicKey(bytes, out _);
+        if (rsa is null)
+        {
+            throw new ArgumentNullException(nameof(rsa));
+        }
+
+        if (string.IsNullOrEmpty(issuer))
+        {
+            throw new ArgumentNullException(nameof(issuer));
+        }
+
+        if (securityAlgorithms.Length == 0)
+        {
+            throw new ArgumentException("The array cannot be empty.", nameof(securityAlgorithms));
+        }
+
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -22,12 +37,12 @@ public static class WebApplicationBuilderExtensions
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = AuthOptions.ISSUER,
+                ValidIssuer = issuer,
                 ValidateLifetime = true,
                 ValidateAudience = false,
-                IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+                IssuerSigningKey = new RsaSecurityKey(rsa),
                 ValidateIssuerSigningKey = true,
-                ValidAlgorithms = [SecurityAlgorithms.HmacSha256]
+                ValidAlgorithms = securityAlgorithms
             };
         });
         return services;

@@ -1,3 +1,4 @@
+using CommonConfigurationExtensions;
 using IdentityUserService;
 using IdentityUserService.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -44,30 +45,12 @@ public class Program
 
         var issuer = builder.Configuration.GetValue<string>("Auth:Issuer");
         var expirationTime = builder.Configuration.GetValue<double>("Auth:ExpirationTimeInDays");
-        var keyFilePath = builder.Configuration.GetRequiredSection("Auth:PublicKeyFilePath").Value!;
-        var bytes = File.ReadAllBytes(keyFilePath);
-        using var rsa = RSA.Create();
-        rsa.ImportRSAPublicKey(bytes, out _);
+        var keyFilePath = builder.Configuration.GetValue<string>("Auth:PublicKeyFilePath");
 
         builder.Services.AddAuthorization();
-        builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddJwtBearer(options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidIssuer = issuer,
-                ValidateLifetime = true,
-                ValidateAudience = false,
-                //IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
-                IssuerSigningKey = new RsaSecurityKey(rsa),
-                ValidateIssuerSigningKey = true
-            };
-        });
+        using var rsa = RSA.Create();
+        rsa.ImportRSAPublicKey(File.ReadAllBytes(keyFilePath!), out _);
+        builder.Services.AddCommonAuthentication(rsa, issuer!, [SecurityAlgorithms.RsaSha256]);
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
@@ -81,6 +64,7 @@ public class Program
             app.MapOpenApi();
         }
         app.UseHttpsRedirection();
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.MapHealthChecks("/healthz");
@@ -132,7 +116,6 @@ public class Program
                 issuer: authOptions.Value.Issuer,
                 claims: claims,
                 expires: DateTime.UtcNow.Add(TimeSpan.FromDays(expirationTime)),
-                //signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysupersecret_secretsecretsecretkey!123")), SecurityAlgorithms.HmacSha256));
                 signingCredentials: signingCredentials);
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(jwt);

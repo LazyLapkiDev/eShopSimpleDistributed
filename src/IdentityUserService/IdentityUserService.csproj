@@ -21,4 +21,8 @@
     <Folder Include="Data\Migrations\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CommonConfigurationExtensions\CommonConfigurationExtensions.csproj" />
+  </ItemGroup>
+
 </Project>
