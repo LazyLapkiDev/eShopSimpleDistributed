@@ -10,6 +10,7 @@ public static class WebApplicationBuilderExtensions
 {
     public static IServiceCollection AddCommonAuthentication(this IServiceCollection services,
         IConfiguration configuration,
+        RSA rsa,
         string[]? securityAlgorithms = null)
     {
         if (configuration is null)
@@ -31,8 +32,6 @@ public static class WebApplicationBuilderExtensions
 
 
         securityAlgorithms ??= [SecurityAlgorithms.RsaSha256];
-
-        var rsa = RSA.Create();
         rsa.ImportRSAPublicKey(File.ReadAllBytes(keyFilePath!), out _);
         services.AddSingleton(rsa);
 

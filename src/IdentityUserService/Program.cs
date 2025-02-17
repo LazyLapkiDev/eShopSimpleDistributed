@@ -44,7 +44,8 @@ public class Program
         });
 
         builder.Services.AddAuthorization();
-        builder.Services.AddCommonAuthentication(builder.Configuration);
+        using var rsa = RSA.Create();
+        builder.Services.AddCommonAuthentication(builder.Configuration, rsa);
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
