@@ -2,5 +2,5 @@
 
 public static class DatabaseConstants
 {
-    public const string Schema = "identityuserservice";
+    public const string Schema = "IdentityUserService";
 }

@@ -7,6 +7,7 @@ public class User
     public string Email { get; set; } = null!;
     public string PasswordHash { get; set; } = null!;
     public string Salt { get; set; } = null!;
+
     public UserSettings Settings { get; set; } = null!;
 
     public DateTime CreatedAt { get; set; }

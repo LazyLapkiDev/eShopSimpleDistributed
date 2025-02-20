@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using IdentityUserService.Data.EntityConfigurations;
+using Microsoft.EntityFrameworkCore;
 using UserService.Data.Entities;
 
 namespace UserService.Data;
@@ -6,7 +7,7 @@ namespace UserService.Data;
 public class AppDbContext : DbContext
 {
     public DbSet<User> Users { get; set; }
-
+    public DbSet<UserSettings> UserSettings { get; set; }
 
     public AppDbContext(DbContextOptions options) : base(options)
     {
@@ -16,7 +17,8 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema(typeof(Program).Assembly.GetName().Name);
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        modelBuilder.ApplyConfiguration(new UserEntityConfiguration());
+        modelBuilder.ApplyConfiguration(new UserSettingsEntityConfiguration());
         base.OnModelCreating(modelBuilder);
     }
 }

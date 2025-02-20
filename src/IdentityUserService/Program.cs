@@ -1,14 +1,14 @@
 using CommonConfigurationExtensions;
 using IdentityUserService;
+using IdentityUserService.IntegrationEvents;
 using IdentityUserService.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.Collections.Immutable;
+using SimpleRabbitEventBus;
+using SimpleRabbitEventBus.Abstractions;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -46,6 +46,8 @@ public class Program
         builder.Services.AddAuthorization();
         using var rsa = RSA.Create();
         builder.Services.AddCommonAuthentication(builder.Configuration, rsa);
+
+        builder.Services.AddSimpleEventBus(builder.Configuration);
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
@@ -120,7 +122,10 @@ public class Program
         .WithDescription("Return a JWT token for user")
         .WithName("Login");
 
-        app.MapPost("/register", async (RegisterInputModel input, HttpContext httpContext, AppDbContext dbContext) =>
+        app.MapPost("/register", async (RegisterInputModel input, 
+            HttpContext httpContext, 
+            AppDbContext dbContext,
+            IEventBus eventBus) =>
         {
             var existingUser = await dbContext.Users.SingleOrDefaultAsync(u => u.Email == input.Email);
             if(existingUser is not null)
@@ -152,8 +157,17 @@ public class Program
                 Settings = new()
             };
 
-            dbContext.Users.Add(newUser);
+            var entry = dbContext.Users.Add(newUser);
             await dbContext.SaveChangesAsync();
+
+            var userCreatedEvent = new UserCreatedEvent
+            {
+                UserId = entry.Entity.Id,
+                Email = entry.Entity.Email,
+                Culture = entry.Entity.Settings.Culture,
+                IsNotificationEnabled = entry.Entity.Settings.IsNotificationEnabled
+            };
+            await eventBus.PublishAsync(userCreatedEvent);
 
             return Results.Ok(new { Message = "User registered successfully.", UserId = newUser.Id });
         })

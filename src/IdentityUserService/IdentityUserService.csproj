@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CommonConfigurationExtensions\CommonConfigurationExtensions.csproj" />
+    <ProjectReference Include="..\SimpleRabbitEventBus\SimpleRabbitEventBus.csproj" />
   </ItemGroup>
 
 </Project>
