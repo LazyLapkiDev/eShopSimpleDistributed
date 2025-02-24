@@ -15,4 +15,6 @@ public class Product : BaseEntity
     public int ReservedQuantity { get; set; }
 
     public decimal Price { get; set; }
+
+    //public IEnumerable<ProductAttribute> ProductAttributes { get; set; } = [];
 }

@@ -16,19 +16,6 @@ public static class CatalogApi
     {
         var api = routeBuilder.MapGroup("api/catalog");
 
-        api.MapGet("/hello", (HttpContext httpContext) =>
-        {
-            return Results.Ok("hello");
-        })
-        .WithName("Hello");
-
-        api.MapGet("/helloWithAuth", (HttpContext httpContext) =>
-        {
-            return Results.Ok("hello");
-        })
-        .WithName("HelloAuth")
-        .RequireAuthorization();
-
         #region Categories endpoints
         var categoryGroup = api.MapGroup("/categories")
             .WithTags("Category");
@@ -237,18 +224,18 @@ public static class CatalogApi
         return TypedResults.Ok(id);
     }
 
-    public static async Task<Results<Ok<ProductViewModel>, NotFound>> UpdateProductAsync(
+    public static async Task<Results<NoContent, NotFound>> UpdateProductAsync(
         [FromRoute]Guid id,
         ProductInputModel inputModel,
         IProductService productService)
     {
-        var product = await productService.GetAsync(id);
-        if (product is null)
+        var result = await productService.UpdateAsync(id, inputModel);
+        if (result == false)
         {
             return TypedResults.NotFound();
         }
 
-        return TypedResults.Ok(product);
+        return TypedResults.NoContent();
     }
 
     public static async Task<Results<NoContent, NotFound>> DeleteProductAsync(

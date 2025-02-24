@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using NotificationService.API.Data;
 using NotificationService.API.IntegrationEvents.EventHandling;
 using NotificationService.API.IntegrationEvents.Events;
+using NotificationService.API.Services;
 using SimpleRabbitEventBus;
-using SimpleRabbitEventBus.Abstractions;
 using System.Security.Cryptography;
 
 namespace NotificationService.API
@@ -27,6 +27,10 @@ namespace NotificationService.API
             builder.Services.AddAuthorization();
             using var rsa = RSA.Create();
             builder.Services.AddCommonAuthentication(builder.Configuration, rsa);
+
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<INotificationService, NotificationSendingService>();
+            builder.Services.AddScoped<UserCreatedEventHandler>();
 
             builder.Services.AddSimpleEventBus(builder.Configuration)
                 .AddSubscription<UserCreatedEvent, UserCreatedEventHandler>();

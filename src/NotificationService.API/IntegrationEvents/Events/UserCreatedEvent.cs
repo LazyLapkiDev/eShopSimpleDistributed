@@ -2,7 +2,7 @@
 
 namespace NotificationService.API.IntegrationEvents.Events;
 
-public class UserCreatedEvent : IntegrationEvent
+public record UserCreatedEvent : IntegrationEvent
 {
     public Guid UserId { get; set; }
     public required string Email { get; set; }

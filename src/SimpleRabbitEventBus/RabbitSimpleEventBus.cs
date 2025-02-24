@@ -53,66 +53,73 @@ public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyn
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var factory = new ConnectionFactory
+        try
         {
-            HostName = _options.HostName ?? "localhost"
-        };
-
-        if(!string.IsNullOrEmpty(_options.UserName))
-        {
-            factory.UserName = _options.UserName;
-        }
-
-        if (!string.IsNullOrEmpty(_options.Password))
-        {
-            factory.Password = _options.Password;
-        }
-
-        _connection = await factory.CreateConnectionAsync();
-        _channel = await _connection.CreateChannelAsync();
-
-        _channel.CallbackExceptionAsync += async (sender, ea) =>
-        {
-            _logger.LogError(ea.Exception, "Error with RabbitMQ consumer channel");
-            await Task.CompletedTask;
-        };
-
-        //await channel.ExchangeDeclareAsync(EXCHANGE, 
-        //    type: ExchangeType.Direct, 
-        //    durable: true,
-        //    autoDelete: false,
-        //    arguments: null, 
-        //    noWait: false, 
-        //    cancellationToken);
-
-        await _channel.ExchangeDeclareAsync(exchange: EXCHANGE, type: ExchangeType.Direct, cancellationToken: cancellationToken);
-
-        var queueDeclareResult = await _channel.QueueDeclareAsync();
-        var queueName = queueDeclareResult.QueueName;
-        foreach (var @event in _subscriptionOptions.EventTypes.Keys)
-        {
-            await _channel.QueueBindAsync(queueName, EXCHANGE, @event);
-        }
-
-        var consumer = new AsyncEventingBasicConsumer(_channel);
-        consumer.ReceivedAsync += async (model, ea) =>
-        {
-            var success = _subscriptionOptions.EventTypes.TryGetValue(ea.RoutingKey, out var t);
-            if(!success)
+            var factory = new ConnectionFactory
             {
-                _logger.LogWarning("Unable to resolve event type for event name {EventName}", ea.RoutingKey);
-                return;
-            }
-            var body = ea.Body.ToArray();
-            await ProcessEvent(body, t!);
-            //await Parallel.ForEachAsync(handlers, async (handler, cancellationToken) =>
-            //{
-            //    await handler.HandleAsync(body);
-            //});
-        };
+                HostName = _options.HostName ?? "localhost"
+            };
 
-        _logger.LogInformation("Starting RabbitMQ basic consume");
-        await _channel.BasicConsumeAsync(queueName, autoAck: true, consumer: consumer, cancellationToken: cancellationToken);
+            if (!string.IsNullOrEmpty(_options.UserName))
+            {
+                factory.UserName = _options.UserName;
+            }
+
+            if (!string.IsNullOrEmpty(_options.Password))
+            {
+                factory.Password = _options.Password;
+            }
+
+            _connection = await factory.CreateConnectionAsync();
+            _channel = await _connection.CreateChannelAsync();
+
+            _channel.CallbackExceptionAsync += async (sender, ea) =>
+            {
+                _logger.LogError(ea.Exception, "Error with RabbitMQ consumer channel");
+                await Task.CompletedTask;
+            };
+
+            //await _channel.ExchangeDeclareAsync(EXCHANGE,
+            //    type: ExchangeType.Direct,
+            //    durable: true,
+            //    autoDelete: false,
+            //    arguments: null,
+            //    noWait: false,
+            //    cancellationToken: cancellationToken);
+
+            await _channel.ExchangeDeclareAsync(exchange: EXCHANGE, type: ExchangeType.Direct, cancellationToken: cancellationToken);
+
+            var queueDeclareResult = await _channel.QueueDeclareAsync();
+            var queueName = queueDeclareResult.QueueName;
+            foreach (var @event in _subscriptionOptions.EventTypes.Keys)
+            {
+                await _channel.QueueBindAsync(queueName, EXCHANGE, @event);
+            }
+
+            var consumer = new AsyncEventingBasicConsumer(_channel);
+            consumer.ReceivedAsync += async (model, ea) =>
+            {
+                var success = _subscriptionOptions.EventTypes.TryGetValue(ea.RoutingKey, out var t);
+                if (!success)
+                {
+                    _logger.LogWarning("Unable to resolve event type for event name {EventName}", ea.RoutingKey);
+                    return;
+                }
+                var body = ea.Body.ToArray();
+                await ProcessEvent(body, t!);
+                //await Parallel.ForEachAsync(handlers, async (handler, cancellationToken) =>
+                //{
+                //    await handler.HandleAsync(body);
+                //});
+            };
+
+            _logger.LogInformation("Starting RabbitMQ basic consume");
+            await _channel.BasicConsumeAsync(queueName, autoAck: true, consumer: consumer, cancellationToken: cancellationToken);
+        }
+        catch
+        {
+            _logger.LogError("Cannot connect to RabbitMQ");
+        }
     }
 
     private async Task ProcessEvent(byte[] body, Type eventType)
@@ -122,16 +129,25 @@ public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyn
             ArgumentNullException.ThrowIfNull(eventType);
             await using var scope = _serviceProvider.CreateAsyncScope();
             var handlers = scope.ServiceProvider.GetKeyedServices<IEventHandler>(eventType);
-
+            var @event = DeserializeMessage(body, eventType);
             foreach (var handler in handlers)
             {
                 await handler.HandleAsync(body);
             }
+            //await Parallel.ForEachAsync(handlers, async (handler, cancellationToken) =>
+            //{
+            //    await handler.HandleAsync(body);
+            //});
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogWarning(ex, "Unable to process message for event name {EventName}", nameof(eventType));
         }
+    }
+
+    private IntegrationEvent? DeserializeMessage(byte[] bytes, Type eventType)
+    {
+        return JsonSerializer.Deserialize(bytes, eventType) as IntegrationEvent;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
@@ -155,8 +171,8 @@ public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyn
     {
         if (!_isDisposed)
         {
-            await _channel.CloseAsync();
-            await _connection.CloseAsync();
+            await _channel.DisposeAsync();
+            await _connection.DisposeAsync();
             _isDisposed = true;
         }
     }

@@ -54,7 +54,7 @@ public class CartManagerService
         };
     }
 
-    public async Task UpdateAsync(Guid userId, IEnumerable<CartItemInputModel> input)
+    public async Task UpdateAsync(Guid userId, CartItemInputModel[] input)
     {
         _logger.LogInformation("Updating the cart of user: {0}", userId);
         var cart = await _cartDbContext.Carts
@@ -70,6 +70,7 @@ public class CartManagerService
             cart.Items = items;
             _cartDbContext.Carts.Update(cart);
             await _cartDbContext.SaveChangesAsync();
+            return;
         }
 
         _logger.LogWarning("No cart for user: {0}", userId);

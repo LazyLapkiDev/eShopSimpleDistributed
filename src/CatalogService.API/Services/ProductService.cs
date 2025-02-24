@@ -1,11 +1,13 @@
 ﻿using CatalogService.API.Data;
 using CatalogService.API.Data.Entities;
+using CatalogService.API.IntegrationEvents.Events;
 using CatalogService.API.Models;
 using CatalogService.API.Models.Brand;
 using CatalogService.API.Models.Category;
 using CatalogService.API.Models.Product;
 using CatalogService.API.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using SimpleRabbitEventBus.Abstractions;
 
 namespace CatalogService.API.Services;
 
@@ -13,12 +15,15 @@ public class ProductService : IProductService
 {
     private readonly ILogger<ProductService> _logger;
     private readonly CatalogDbContext _catalogDbContext;
+    private readonly IEventBus _eventBus;
 
     public ProductService(ILogger<ProductService> logger,
-        CatalogDbContext catalogDbContext)
+        CatalogDbContext catalogDbContext,
+        IEventBus eventBus)
     {
         _logger = logger;
         _catalogDbContext = catalogDbContext;
+        _eventBus = eventBus;
     }
 
     public async Task<PaginatedResult<ProductListViewModel>> GetPaginatedAsync(PaginationRequest paginationRequest,
@@ -123,7 +128,24 @@ public class ProductService : IProductService
         };
 
         var entry = await _catalogDbContext.Products.AddAsync(product);
-        await _catalogDbContext.SaveChangesAsync();
+        try
+        {
+            
+            await _catalogDbContext.SaveChangesAsync();
+            var createProductEvent = new CreateProductEvent
+            { 
+                ProductId = entry.Entity.Id,
+                Name = entry.Entity.Name,
+                Price = entry.Entity.Price
+            };
+            await _eventBus.PublishAsync(createProductEvent);
+            
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Create product fail, name {0}, error: {1}", model.Name, ex.Message);
+            throw;
+        }
         return entry.Entity.Id;
     }
 
@@ -146,6 +168,22 @@ public class ProductService : IProductService
 
         var entry = _catalogDbContext.Products.Update(product);
         await _catalogDbContext.SaveChangesAsync();
+        try
+        {
+
+            await _catalogDbContext.SaveChangesAsync();
+            var updateProductEvent = new UpdateProductEvent(
+                entry.Entity.Id,
+                entry.Entity.Price,
+                entry.Entity.Name
+            );
+            await _eventBus.PublishAsync(updateProductEvent);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Update product fail, id {0}, error: {1}", id, ex.Message);
+            throw;
+        }
         return true;
     }
 

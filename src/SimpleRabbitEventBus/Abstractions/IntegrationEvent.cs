@@ -1,16 +1,17 @@
 ﻿namespace SimpleRabbitEventBus.Abstractions;
 
-public abstract class IntegrationEvent
+public abstract record IntegrationEvent
 {
     public IntegrationEvent()
     {
         Id = Guid.NewGuid();
         CreationDate = DateTime.UtcNow;
+        EventType = this.GetType().Name;
     }
 
-    public Guid Id { get; set; }
+    public Guid Id { get; init; }
 
-    public DateTime CreationDate { get; set; }
-    //public string? EventType { get; set; }
-    public string? CorrelationId { get; set; }
+    public DateTime CreationDate { get; init; }
+    public string? EventType { get; init; }
+    public string? CorrelationId { get; init; }
 }

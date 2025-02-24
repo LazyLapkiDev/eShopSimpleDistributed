@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Security.Claims;
 using System.Security.Cryptography;
 
 namespace CatalogService.API
@@ -19,7 +20,13 @@ namespace CatalogService.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddAuthorization();
+            builder.Services.AddAuthorization(options  =>
+            {
+                //options.AddPolicy("admin", policy =>
+                //{
+                //    policy.RequireClaim(ClaimTypes.Role, ["admin"]);
+                //});
+            });
             using var rsa = RSA.Create();
             builder.Services.AddCommonAuthentication(builder.Configuration, rsa);
 

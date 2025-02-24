@@ -3,3 +3,7 @@
 GET {{CartService.API_HostAddress}}/api/cart
 
 ###
+
+POST {{CartService.API_HostAddress}}/api/cart
+
+###

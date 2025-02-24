@@ -21,7 +21,7 @@ public class CategoryService : ICategoryService
     public async Task<List<CategoryListViewModel>> GetAllCategoriesAsync()
     {
         _logger.LogInformation("Getting list of all categories");
-        var categories = await _catalogContext.Categories.Where(x => x.IsDeleted != false)
+        var categories = await _catalogContext.Categories.Where(x => x.IsDeleted == false)
             .Select(x => new CategoryListViewModel
             {
                 Id = x.Id,
@@ -40,7 +40,7 @@ public class CategoryService : ICategoryService
         _logger.LogInformation("Getting detailed category with id: {0}", categoryId);
         var category = await _catalogContext.Categories
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.IsDeleted != false && x.Id == categoryId);
+            .FirstOrDefaultAsync(x => x.IsDeleted == false && x.Id == categoryId);
 
         if(category is null)
         {

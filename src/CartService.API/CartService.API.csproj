@@ -18,6 +18,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CommonConfigurationExtensions\CommonConfigurationExtensions.csproj" />
+    <ProjectReference Include="..\SimpleRabbitEventBus\SimpleRabbitEventBus.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="IntegrationEvents\Handlers\" />
   </ItemGroup>
 
 </Project>
