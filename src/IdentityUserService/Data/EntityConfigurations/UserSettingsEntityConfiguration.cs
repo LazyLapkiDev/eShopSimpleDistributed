@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using UserService.Data.Entities;
+using IdentityUserService.Data.Entities;
 
 namespace IdentityUserService.Data.EntityConfigurations;
 

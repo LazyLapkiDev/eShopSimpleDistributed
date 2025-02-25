@@ -5,9 +5,8 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using SimpleRabbitEventBus.Abstractions;
+using SimpleRabbitEventBus.Exceptions;
 using SimpleRabbitEventBus.Models;
-using System;
-using System.Runtime.InteropServices;
 using System.Text.Json;
 
 namespace SimpleRabbitEventBus;
@@ -19,7 +18,6 @@ public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyn
     private IConnection _connection = null!;
     private IChannel _channel = null!;
 
-    private readonly Dictionary<string, IEventHandler>? _events;
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<RabbitSimpleEventBus> _logger;
     private readonly SimpleRabbitEventBusOptions _options;
@@ -130,9 +128,13 @@ public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyn
             await using var scope = _serviceProvider.CreateAsyncScope();
             var handlers = scope.ServiceProvider.GetKeyedServices<IEventHandler>(eventType);
             var @event = DeserializeMessage(body, eventType);
+            if(@event is null)
+            {
+                throw new EventNullException(eventType.Name, "Event data is missing");
+            }
             foreach (var handler in handlers)
             {
-                await handler.HandleAsync(body);
+                await handler.HandleAsync(@event);
             }
             //await Parallel.ForEachAsync(handlers, async (handler, cancellationToken) =>
             //{

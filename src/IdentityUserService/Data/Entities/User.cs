@@ -1,4 +1,4 @@
-﻿namespace UserService.Data.Entities;
+﻿namespace IdentityUserService.Data.Entities;
 
 public class User
 {
@@ -7,6 +7,7 @@ public class User
     public string Email { get; set; } = null!;
     public string PasswordHash { get; set; } = null!;
     public string Salt { get; set; } = null!;
+    public bool CanReceiveMessages { get; set; } = false;
 
     public UserSettings Settings { get; set; } = null!;
 

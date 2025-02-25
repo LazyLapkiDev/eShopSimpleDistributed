@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SimpleRabbitEventBus.Abstractions;
 using SimpleRabbitEventBus.Models;
+using System;
 
 
 namespace SimpleRabbitEventBus;
@@ -26,7 +27,7 @@ public static class RabbitSimpleEventBusDependencyInjectionExtensions
 
     public static ISimpleRabbitEventBusBuilder AddSubscription<T, TEventHandler>(this ISimpleRabbitEventBusBuilder builder)
         where T : IntegrationEvent
-        where TEventHandler : class, IEventHandler
+        where TEventHandler : class, IEventHandler<T>
     {
         builder.Services.AddKeyedTransient<IEventHandler, TEventHandler>(typeof(T));
         builder.Services.Configure<EventBusSubscriptionInfo>( o =>

@@ -1,8 +1,8 @@
 ﻿using IdentityUserService.Data.EntityConfigurations;
 using Microsoft.EntityFrameworkCore;
-using UserService.Data.Entities;
+using IdentityUserService.Data.Entities;
 
-namespace UserService.Data;
+namespace IdentityUserService.Data;
 
 public class AppDbContext : DbContext
 {

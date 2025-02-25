@@ -1,6 +1,6 @@
 ﻿using SimpleRabbitEventBus.Abstractions;
 
-namespace IdentityUserService.IntegrationEvents;
+namespace IdentityUserService.IntegrationEvents.Events;
 
 public record UserCreatedEvent : IntegrationEvent
 {

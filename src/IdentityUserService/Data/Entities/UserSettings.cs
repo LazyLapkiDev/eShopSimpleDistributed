@@ -1,4 +1,4 @@
-﻿namespace UserService.Data.Entities;
+﻿namespace IdentityUserService.Data.Entities;
 
 public class UserSettings
 {

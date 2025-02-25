@@ -1,10 +1,10 @@
 using CommonConfigurationExtensions;
 using IdentityUserService;
-using IdentityUserService.IntegrationEvents;
+using IdentityUserService.IntegrationEvents.Events;
 using IdentityUserService.Models;
+using IdentityUserService.Services;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SimpleRabbitEventBus;
@@ -12,11 +12,11 @@ using SimpleRabbitEventBus.Abstractions;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
-using UserService.Data;
-using UserService.Data.Entities;
+using IdentityUserService.Data;
+using IdentityUserService.Data.Entities;
+using IdentityUserService.IntegrationEvents.Handlers;
 
-namespace UserService;
+namespace IdentityUserService;
 
 public class Program
 {
@@ -47,11 +47,14 @@ public class Program
         using var rsa = RSA.Create();
         builder.Services.AddCommonAuthentication(builder.Configuration, rsa);
 
-        builder.Services.AddSimpleEventBus(builder.Configuration);
+        builder.Services.AddSimpleEventBus(builder.Configuration)
+            .AddSubscription<NotificationUserCreatedConfirmEvent, NotificationUserCreatedConfirmEventHandler>();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
         builder.Services.AddHealthChecks();
+
+        builder.Services.AddScoped<IUserService, UserService>();
 
         var app = builder.Build();
 
@@ -154,7 +157,10 @@ public class Program
                 PasswordHash = hashedPassword,
                 Salt = Convert.ToBase64String(salt),
 
-                Settings = new()
+                Settings = new(),
+
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
             var entry = dbContext.Users.Add(newUser);
