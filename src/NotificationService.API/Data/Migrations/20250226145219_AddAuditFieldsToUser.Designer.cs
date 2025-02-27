@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace NotificationService.API.Data.Nigrations
+namespace NotificationService.API.Data.Migrations
 {
     [DbContext(typeof(NotificationDbContext))]
-    [Migration("20250223110024_AddAuditFieldsToUserTable")]
-    partial class AddAuditFieldsToUserTable
+    [Migration("20250226145219_AddAuditFieldsToUser")]
+    partial class AddAuditFieldsToUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

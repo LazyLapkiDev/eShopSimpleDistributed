@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace NotificationService.API.Data.Nigrations
+namespace NotificationService.API.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAuditFieldsToUserTable : Migration
+    public partial class AddAuditFieldsToUser : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

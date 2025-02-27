@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService.API", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRabbitEventBus", "src\SimpleRabbitEventBus\SimpleRabbitEventBus.csproj", "{4E942115-30AF-4C2F-9BC5-C1F2189032A9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderService.API", "src\OrderService.API\OrderService.API.csproj", "{98982C8B-E6A7-4840-AD51-69C03E553400}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,10 @@ Global
 		{4E942115-30AF-4C2F-9BC5-C1F2189032A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E942115-30AF-4C2F-9BC5-C1F2189032A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E942115-30AF-4C2F-9BC5-C1F2189032A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98982C8B-E6A7-4840-AD51-69C03E553400}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98982C8B-E6A7-4840-AD51-69C03E553400}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98982C8B-E6A7-4840-AD51-69C03E553400}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98982C8B-E6A7-4840-AD51-69C03E553400}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,6 +57,7 @@ Global
 		{75FE99A8-8E38-4A09-930E-68DDA13C126A} = {2C6B3E06-7F6E-4146-B5B6-D1F433EADB04}
 		{6776DE8A-0A31-4526-B716-373927731FC9} = {2C6B3E06-7F6E-4146-B5B6-D1F433EADB04}
 		{4E942115-30AF-4C2F-9BC5-C1F2189032A9} = {2C6B3E06-7F6E-4146-B5B6-D1F433EADB04}
+		{98982C8B-E6A7-4840-AD51-69C03E553400} = {2C6B3E06-7F6E-4146-B5B6-D1F433EADB04}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F27BCF69-ECCE-488A-B99E-80030D93758D}
