@@ -1,6 +1,9 @@
-﻿namespace OrderService.API.Data.Enums;
+﻿namespace OrdersService.API.Data.Enums;
 
 public enum OrderStatus
 {
-    Created
+    Created,
+    Confirmed,
+    Completed,
+    Canceled
 }

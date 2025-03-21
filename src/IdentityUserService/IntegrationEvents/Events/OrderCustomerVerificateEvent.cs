@@ -1,8 +1,8 @@
 ﻿using SimpleRabbitEventBus.Abstractions;
 
-namespace OrderService.API.IntegrationEvents.Events;
+namespace IdentityUserService.IntegrationEvents.Events;
 
-public record ConfirmOrderEvent : IntegrationEvent
+public record OrderCustomerVerificateEvent : IntegrationEvent
 {
     public Guid UserId { get; set; }
     public Guid OrderId { get; set; }

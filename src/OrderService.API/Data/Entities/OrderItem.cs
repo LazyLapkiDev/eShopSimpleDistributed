@@ -1,4 +1,4 @@
-﻿namespace OrderService.API.Data.Entities;
+﻿namespace OrdersService.API.Data.Entities;
 
 public class OrderItem : BaseEntity
 {

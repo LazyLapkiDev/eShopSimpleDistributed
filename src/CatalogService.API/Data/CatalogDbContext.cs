@@ -8,6 +8,7 @@ public class CatalogDbContext : DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Brand> Brands { get; set; }
+    public DbSet<Reservation> Reservations { get; set; }
 
     public CatalogDbContext(DbContextOptions options) : base(options)
     {

@@ -20,11 +20,4 @@
     <ProjectReference Include="..\SimpleRabbitEventBus\SimpleRabbitEventBus.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Data\EntityConfigurations\" />
-    <Folder Include="Api\" />
-    <Folder Include="IntegrationEvents\Handlers\" />
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>

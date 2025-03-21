@@ -4,21 +4,12 @@ using IdentityUserService.IntegrationEvents.Events;
 
 namespace IdentityUserService.IntegrationEvents.Handlers;
 
-public class NotificationUserCreatedConfirmEventHandler : IEventHandler<NotificationUserCreatedConfirmEvent>
+public class NotificationUserCreatedConfirmEventHandler(ILogger<NotificationUserCreatedConfirmEventHandler> logger,
+        IUserService userService) : IEventHandler<NotificationUserCreatedConfirmEvent>
 {
-    private readonly ILogger<NotificationUserCreatedConfirmEventHandler> _logger;
-    private readonly IUserService _userService;
-
-    public NotificationUserCreatedConfirmEventHandler(ILogger<NotificationUserCreatedConfirmEventHandler> logger,
-        IUserService userService)
-    {
-        _logger = logger;
-        _userService = userService;
-    }
-
     public async Task HandleAsync(NotificationUserCreatedConfirmEvent @event)
     {
-        _logger.LogInformation("Receiving user create message from event bus");
-        await _userService.ConfirmMailingAsync(@event.UserId);
+        logger.LogInformation("Receiving user create message from event bus");
+        await userService.ConfirmMailingAsync(@event.UserId);
     }
 }

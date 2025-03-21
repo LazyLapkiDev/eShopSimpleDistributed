@@ -11,7 +11,7 @@ using System.Text.Json;
 
 namespace SimpleRabbitEventBus;
 
-public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyncDisposable
+public class RabbitSimpleEventBus : IHostedService, IEventBus, IDisposable, IAsyncDisposable
 {
     private const string EXCHANGE = "eShopSimple";
     private bool _isDisposed = false;
@@ -46,6 +46,7 @@ public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyn
         catch(Exception ex)
         {
             _logger.LogError(ex, "Error with SimpleRabbitEventBus publish method");
+            throw;
         }
     }
 
@@ -68,8 +69,8 @@ public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyn
                 factory.Password = _options.Password;
             }
 
-            _connection = await factory.CreateConnectionAsync();
-            _channel = await _connection.CreateChannelAsync();
+            _connection = await factory.CreateConnectionAsync(cancellationToken);
+            _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
 
             _channel.CallbackExceptionAsync += async (sender, ea) =>
             {
@@ -91,7 +92,7 @@ public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyn
             var queueName = queueDeclareResult.QueueName;
             foreach (var @event in _subscriptionOptions.EventTypes.Keys)
             {
-                await _channel.QueueBindAsync(queueName, EXCHANGE, @event);
+                await _channel.QueueBindAsync(queueName, EXCHANGE, @event, cancellationToken: cancellationToken);
             }
 
             var consumer = new AsyncEventingBasicConsumer(_channel);
@@ -105,10 +106,6 @@ public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyn
                 }
                 var body = ea.Body.ToArray();
                 await ProcessEvent(body, t!);
-                //await Parallel.ForEachAsync(handlers, async (handler, cancellationToken) =>
-                //{
-                //    await handler.HandleAsync(body);
-                //});
             };
 
             _logger.LogInformation("Starting RabbitMQ basic consume");
@@ -132,39 +129,37 @@ public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyn
             {
                 throw new EventNullException(eventType.Name, "Event data is missing");
             }
-            foreach (var handler in handlers)
+            await Parallel.ForEachAsync(handlers, async (handler, cancellationToken) =>
             {
                 await handler.HandleAsync(@event);
-            }
-            //await Parallel.ForEachAsync(handlers, async (handler, cancellationToken) =>
-            //{
-            //    await handler.HandleAsync(body);
-            //});
+            });
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Unable to process message for event name {EventName}", nameof(eventType));
+            throw;
         }
     }
 
-    private IntegrationEvent? DeserializeMessage(byte[] bytes, Type eventType)
+    private static IntegrationEvent? DeserializeMessage(byte[] bytes, Type eventType)
     {
         return JsonSerializer.Deserialize(bytes, eventType) as IntegrationEvent;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        await _channel.CloseAsync();
-        await _connection.CloseAsync();
+        await _channel.CloseAsync(cancellationToken: cancellationToken);
+        await _connection.CloseAsync(cancellationToken: cancellationToken);
     }
 
     public void Dispose()
     {
         if(!_isDisposed)
         {
-            _channel.Dispose();
+            _channel?.Dispose();
             _connection?.Dispose();
             _isDisposed = true;
+            GC.SuppressFinalize(this);
         }
         
     }
@@ -176,6 +171,8 @@ public class RabbitSimpleEventBus : IHostedService,IEventBus, IDisposable, IAsyn
             await _channel.DisposeAsync();
             await _connection.DisposeAsync();
             _isDisposed = true;
+            GC.SuppressFinalize(this);
         }
+
     }
 }

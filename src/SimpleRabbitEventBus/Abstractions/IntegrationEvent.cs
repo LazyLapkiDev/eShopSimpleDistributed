@@ -9,7 +9,7 @@ public abstract record IntegrationEvent
         EventType = this.GetType().Name;
     }
 
-    public Guid Id { private get; init; }
+    private Guid Id { get; init; }
     public Guid GetIntegrationEventId() => Id;
 
     public DateTime CreationDate { get; init; }

@@ -1,15 +1,14 @@
-
 using CatalogService.API.Api;
 using CatalogService.API.Data;
 using CatalogService.API.Services;
 using CatalogService.API.Services.Interfaces;
 using CommonConfigurationExtensions;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Security.Claims;
 using System.Security.Cryptography;
+using SimpleRabbitEventBus;
+using CatalogService.API.IntegrationEvents.Handlers;
+using CatalogService.API.IntegrationEvents.Events;
 
 namespace CatalogService.API
 {
@@ -38,11 +37,13 @@ namespace CatalogService.API
 
             builder.Services.AddHealthChecks();
 
-
             builder.Services.AddScoped<ICategoryService, CategoryService>()
                 .AddScoped<IBrandService, BrandService>()
-                .AddScoped<IProductService, ProductService>();
+                .AddScoped<IProductService, ProductService>()
+                .AddScoped<IReservationService, ReservationService>();
 
+            builder.Services.AddSimpleEventBus(builder.Configuration)
+                .AddSubscription<OrderItemsReserveEvent, OrderItemsReserveEventHandler>();
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();

@@ -124,6 +124,44 @@ namespace CatalogService.API.Data.Migrations
                     b.ToTable("Products", "CatalogService");
                 });
 
+            modelBuilder.Entity("CatalogService.API.Data.Entities.ProductReservation", b =>
+                {
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ReservationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ProductId", "ReservationId");
+
+                    b.HasIndex("ReservationId");
+
+                    b.ToTable("ProductReservation", "CatalogService");
+                });
+
+            modelBuilder.Entity("CatalogService.API.Data.Entities.Reservation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Reservations", "CatalogService");
+                });
+
             modelBuilder.Entity("CatalogService.API.Data.Entities.Product", b =>
                 {
                     b.HasOne("CatalogService.API.Data.Entities.Brand", "Brand")
@@ -143,6 +181,25 @@ namespace CatalogService.API.Data.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("CatalogService.API.Data.Entities.ProductReservation", b =>
+                {
+                    b.HasOne("CatalogService.API.Data.Entities.Product", "Product")
+                        .WithMany("ProductReservations")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CatalogService.API.Data.Entities.Reservation", "Reservation")
+                        .WithMany("ProductReservations")
+                        .HasForeignKey("ReservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Reservation");
+                });
+
             modelBuilder.Entity("CatalogService.API.Data.Entities.Brand", b =>
                 {
                     b.Navigation("Products");
@@ -151,6 +208,16 @@ namespace CatalogService.API.Data.Migrations
             modelBuilder.Entity("CatalogService.API.Data.Entities.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("CatalogService.API.Data.Entities.Product", b =>
+                {
+                    b.Navigation("ProductReservations");
+                });
+
+            modelBuilder.Entity("CatalogService.API.Data.Entities.Reservation", b =>
+                {
+                    b.Navigation("ProductReservations");
                 });
 #pragma warning restore 612, 618
         }

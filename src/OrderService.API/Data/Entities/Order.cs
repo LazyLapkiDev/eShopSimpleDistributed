@@ -1,11 +1,11 @@
-﻿using OrderService.API.Data.Enums;
+﻿using OrdersService.API.Data.Enums;
 
-namespace OrderService.API.Data.Entities;
+namespace OrdersService.API.Data.Entities;
 
 public class Order : BaseEntity
 {
     public Guid UserId { get; set; }
     public OrderStatus Status { get; set; }
-    public IEnumerable<OrderItem> OrderItems { get; set; } = [];
+    public ICollection<OrderItem> OrderItems { get; set; } = [];
     public string? RejectComment { get; set; }
 }

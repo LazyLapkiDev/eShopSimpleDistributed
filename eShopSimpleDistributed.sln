@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService.API", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleRabbitEventBus", "src\SimpleRabbitEventBus\SimpleRabbitEventBus.csproj", "{4E942115-30AF-4C2F-9BC5-C1F2189032A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderService.API", "src\OrderService.API\OrderService.API.csproj", "{98982C8B-E6A7-4840-AD51-69C03E553400}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrdersService.API", "src\OrderService.API\OrdersService.API.csproj", "{98982C8B-E6A7-4840-AD51-69C03E553400}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

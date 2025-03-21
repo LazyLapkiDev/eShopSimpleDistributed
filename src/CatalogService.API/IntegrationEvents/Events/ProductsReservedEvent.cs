@@ -2,4 +2,6 @@
 
 namespace CatalogService.API.IntegrationEvents.Events;
 
-public record UpdateProductEvent(Guid ProductId, decimal Price, string Name) : IntegrationEvent;
+public record ProductsReservedEvent(Guid OrderId, bool Success) : IntegrationEvent
+{
+}

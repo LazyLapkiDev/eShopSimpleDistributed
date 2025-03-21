@@ -17,4 +17,6 @@ public class Product : BaseEntity
     public decimal Price { get; set; }
 
     //public IEnumerable<ProductAttribute> ProductAttributes { get; set; } = [];
+    public List<Reservation> Reservations { get; set; } = [];
+    public List<ProductReservation> ProductReservations { get; set; } = [];
 }

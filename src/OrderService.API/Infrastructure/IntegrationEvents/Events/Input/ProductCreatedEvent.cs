@@ -1,8 +1,8 @@
 ﻿using SimpleRabbitEventBus.Abstractions;
 
-namespace CatalogService.API.IntegrationEvents.Events;
+namespace OrdersService.API.Infrastructure.IntegrationEvents.Events.Input;
 
-public record CreateProductEvent : IntegrationEvent
+public record ProductCreatedEvent : IntegrationEvent
 {
     public Guid ProductId { get; init; }
     public decimal Price { get; init; }

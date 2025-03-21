@@ -9,5 +9,8 @@ public class ProductEntityConfiguration : BaseEntityTypeConfiguration<Product>
     {
         builder.HasIndex(e => e.BrandId);
         builder.HasIndex(e => e.CategoryId);
+        builder.HasMany(e => e.Reservations)
+            .WithMany(e => e.Products)
+            .UsingEntity<ProductReservation>();
     }
 }

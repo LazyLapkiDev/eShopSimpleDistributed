@@ -1,4 +1,4 @@
-﻿namespace OrderService.API.Data;
+﻿namespace OrdersService.API.Data;
 
 public class DatabaseConfiguration
 {

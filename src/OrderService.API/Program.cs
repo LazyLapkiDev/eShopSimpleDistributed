@@ -1,10 +1,16 @@
 using CommonConfigurationExtensions;
 using Microsoft.EntityFrameworkCore;
-using OrderService.API.Data;
+using OrdersService.API.Data;
 using System.Security.Cryptography;
 using SimpleRabbitEventBus;
+using OrdersService.API.Services;
+using OrdersService.API.Api;
+using OrdersService.API.Infrastructure.IntegrationEvents.Handlers;
+using OrdersService.API.Infrastructure.IntegrationEvents.Events.Input;
+using OrdersService.API.Infrastructure;
+using OrdersService.API.Infrastructure.IntegrationEvents.Events.Output;
 
-namespace OrderService.API;
+namespace OrdersService.API;
 
 public class Program
 {
@@ -23,7 +29,19 @@ public class Program
         using var rsa = RSA.Create();
         builder.Services.AddCommonAuthentication(builder.Configuration, rsa);
 
-        builder.Services.AddSimpleEventBus(builder.Configuration);
+        builder.Services.AddSimpleEventBus(builder.Configuration)
+            .AddSubscription<ProductCreatedEvent, ProductCreatedEventHandler>()
+            .AddSubscription<ProductUpdatedEvent, ProductUpdatedEventHandler>()
+            .AddSubscription<UserVerificatedEvent, UserVerificatedEventHandler>()
+            .AddSubscription<OrderCreatedEvent, OrderCreatedEventHandler>()
+            .AddSubscription<OrderConfirmationEvent, OrderConfirmationEventHandler>()
+            .AddSubscription<OrderRejectEvent, OrderRejectEventHandler>()
+            .AddSubscription<ProductsReservedEvent, ProductsReservedEventHandler>();
+
+        builder.Services.AddScoped<IProductService, ProductService>()
+            .AddScoped<IOrderService, OrderService>();
+
+        builder.Services.AddScoped<OrderSagaOrchestrator>();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
@@ -39,6 +57,7 @@ public class Program
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
+        app.MapOrderEndpoints();
 
         app.Run();
     }

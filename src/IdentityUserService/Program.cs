@@ -48,7 +48,8 @@ public class Program
         builder.Services.AddCommonAuthentication(builder.Configuration, rsa);
 
         builder.Services.AddSimpleEventBus(builder.Configuration)
-            .AddSubscription<NotificationUserCreatedConfirmEvent, NotificationUserCreatedConfirmEventHandler>();
+            .AddSubscription<NotificationUserCreatedConfirmEvent, NotificationUserCreatedConfirmEventHandler>()
+            .AddSubscription<OrderCustomerVerificateEvent, OrderCustomerVerificateEventHandler>();
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();

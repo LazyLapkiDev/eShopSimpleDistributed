@@ -37,7 +37,6 @@ public class ProductService : IProductService
 
         var query = _catalogDbContext.Products
             .Include(p => p.Brand)
-            .AsQueryable()
             .AsNoTrackingWithIdentityResolution();
 
         var categoryResult = Guid.TryParse(category, out var categoryId);
@@ -132,7 +131,7 @@ public class ProductService : IProductService
         {
             
             await _catalogDbContext.SaveChangesAsync();
-            var createProductEvent = new CreateProductEvent
+            var createProductEvent = new ProductCreatedEvent
             { 
                 ProductId = entry.Entity.Id,
                 Name = entry.Entity.Name,
@@ -172,7 +171,7 @@ public class ProductService : IProductService
         {
 
             await _catalogDbContext.SaveChangesAsync();
-            var updateProductEvent = new UpdateProductEvent(
+            var updateProductEvent = new ProductUpdatedEvent(
                 entry.Entity.Id,
                 entry.Entity.Price,
                 entry.Entity.Name
