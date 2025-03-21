@@ -1,9 +1,0 @@
-@CartService.API_HostAddress = https://localhost:7090
-
-GET {{CartService.API_HostAddress}}/api/cart
-
-###
-
-POST {{CartService.API_HostAddress}}/api/cart
-
-###
