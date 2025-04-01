@@ -124,11 +124,7 @@ public class RabbitSimpleEventBus : IHostedService, IEventBus, IDisposable, IAsy
             ArgumentNullException.ThrowIfNull(eventType);
             await using var scope = _serviceProvider.CreateAsyncScope();
             var handlers = scope.ServiceProvider.GetKeyedServices<IEventHandler>(eventType);
-            var @event = DeserializeMessage(body, eventType);
-            if(@event is null)
-            {
-                throw new EventNullException(eventType.Name, "Event data is missing");
-            }
+            var @event = DeserializeMessage(body, eventType) ?? throw new EventNullException(eventType.Name, "Event data is missing");
             await Parallel.ForEachAsync(handlers, async (handler, cancellationToken) =>
             {
                 await handler.HandleAsync(@event);
